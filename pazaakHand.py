@@ -26,6 +26,40 @@ if(__name__ == "__main__"):
 	standardDeck.sort(key=lambda x: x.getCardScore, reverse=False)
 	print drawnCard, standardDeck
 
+def convertPlayerResponseToCard(playerResponse):
+	if(bool(re.match(r"playPlus[0-9]", playerResponse))):
+		cardValueToPlay = int(playerResponse[8:])
+		return ("plus", cardValueToPlay)
+	elif(bool(re.match(r"playMinus[0-9]", playerResponse))):
+		cardValueToPlay = int(playerResponse[9:])
+		return ("minus", cardValueToPlay)
+	elif(bool(re.match(r"playDouble", playerResponse))):
+		return ("double", 0)
+	elif(bool(re.match(r"play3&6", playerResponse))):
+		return ("threeAndSix", 0)
+	elif(bool(re.match(r"play2&4", playerResponse))):
+		return ("twoAndFour", 0)
+	elif(bool(re.match(r"playPlusMinus[0-9]", playerResponse))):
+			
+		valueAndSign = playerResponse[13:]
+		## now need to pull this apart to get the 
+			
+		print repr(valueAndSign)
+		if("minus" in valueAndSign):
+			##aaaaa
+			value = int(valueAndSign[:-5])
+			switch = "minus"
+		elif("plus" in valueAndSign):
+			value = int(valueAndSign[:-4])
+			switch = "plus"
+		else: 
+			return None
+				
+		return ("plusMinus", value, switch)
+				
+	else:
+		return None
+
 
 class pazaakHand(object):
 	def __init__(self, player1, player2):
@@ -77,6 +111,9 @@ class pazaakHand(object):
 			return {self.playersByName["player1"]: "won", self.playersByName["player2"]: "lost"}	
 		elif(player2Score == 20):
 			self.playerState["player2"] = "stand"
+
+
+
 	
 	def playHand(self, handNumber, handRound, handsWon):
 
@@ -89,55 +126,14 @@ class pazaakHand(object):
 		player2Score = playedCardsValue(self.cards["player2"])	
 		## calculate both players scores so player1 ai can make decisions based
 		## on what the scores are
-		
-		## player 1 ai goes somewhere in here
 
-		##print self.player1.aiCall()
-
-
-		self.printHandState(handNumber, handRound, handsWon)
-
-		def convertPlayerResponseToCard(playerResponse):
-			if(bool(re.match(r"playPlus[0-9]", playerResponse))):
-				cardValueToPlay = int(playerResponse[8:])
-				return ("plus", cardValueToPlay)
-			elif(bool(re.match(r"playMinus[0-9]", playerResponse))):
-				cardValueToPlay = int(playerResponse[9:])
-				return ("minus", cardValueToPlay)
-			elif(bool(re.match(r"playDouble", playerResponse))):
-				return ("double", 0)
-			elif(bool(re.match(r"play3&6", playerResponse))):
-				return ("threeAndSix", 0)
-			elif(bool(re.match(r"play2&4", playerResponse))):
-				return ("twoAndFour", 0)
-			elif(bool(re.match(r"playPlusMinus[0-9]", playerResponse))):
-				
-				valueAndSign = playerResponse[13:]
-				## now need to pull this apart to get the 
-				
-				print repr(valueAndSign)
-				if("minus" in valueAndSign):
-					##aaaaa
-					value = int(valueAndSign[:-5])
-					switch = "minus"
-				elif("plus" in valueAndSign):
-					value = int(valueAndSign[:-4])
-					switch = "plus"
-				else: 
-					return None
-				
-				return ("plusMinus", value, switch)
-				
-			else:
-				return None
+		self.printHandState(handNumber, handRound, handsWon)	
 			
-			
-			
-			
-
 		if(self.playerState["player1"] == "live"):
 			playerOrder = "player1"
 			player1Decision = self.players[self.playersByName["player1"]].aiCall(True, playerOrder, self, player1Score, player2Score)
+			## true indicates that this is the first decision pass (ie play a
+			## card or maybe stand)
 			print "%s decision: " % self.playersByName["player1"], player1Decision, "\n"
 			if(player1Decision == "stand"):
 				self.playerState["player1"] = "stand"
